@@ -1,13 +1,18 @@
 import java.util.HashSet;
+import java.util.Scanner;
 import java.awt.Point;
 import java.util.Random;
 import java.util.HashMap;
 
 public class Solution{
 
+    public static Scanner scanner = new Scanner(System.in);
+
     public static boolean gameFinished = false;
-    static int mapMax = 10;
-    static int mapMin = 10;
+    public static boolean gameLost = false;
+
+    public static int mapMax = 10;
+    public static int mapMin = 10;
 
     public static HashSet<Point> mineMap = new HashSet<Point>();
 
@@ -15,18 +20,51 @@ public class Solution{
 
     public static String[][] clientMap = new String[mapMax][mapMax];
 
-    public static void main(String[] args){
+    public static HashSet<Point> foundMap = new HashSet<Point>();
 
+    public static void state(Point selected){
+        if(mineMap.contains(selected)){
+            System.out.println("hit mine");
+            gameFinished = true;
+            gameLost = true;
+        }
+        
+        if(nextToMineMap.containsKey(selected) && !gameLost){
+            System.out.println("found next to mine map");
+            clientMap[(int) selected.getX()][(int) selected.getY()] = Integer.toString(nextToMineMap.get(selected));
+        }
+        else if(!nextToMineMap.containsKey(selected) && !gameLost){
+            //
+            // todo: write logic to map out areas that are 
+            //
+            System.out.println("did not hit mine");
+        }   
+    }
+
+    public static void main(String[] args) throws Exception{
+
+        initClientMap();
         initMineList();
         initNextToMineList();
-        initClientMap();
         initIntro();
-        //printClientMap();
-        printRawClientMap();
-        // while(!gameFinished);
-        // {
+        // printClientMap();
+        // printRawClientMap();
+        // println(scanner.nextLine());
 
-        // }
+        while(gameFinished == false){
+            String input = scanner.nextLine();
+            Point selected = handleInput(input);
+            state(selected);
+            printRawClientMap();
+            // gameFinished = true;
+        }
+
+        if(!gameLost){
+            println("Congrats you won!");
+        }
+        else{
+            println("You lost!");
+        }
     }
 
     public static void initClientMap(){
@@ -37,13 +75,45 @@ public class Solution{
         }
     }
 
-    public static void initIntro(){
-        
+    public static Point handleInput(String input) throws Exception {
+        Point p = new Point();
+        try{
+            String[] inputSplit = input.split(",");
+            StringBuilder s = new StringBuilder();
+            for(int i = 0; i < inputSplit[0].length(); i++){
+                char c = inputSplit[0].charAt(i);
+                if(Character.isDigit(c)){
+                    s.append(c);
+                }
+            }
+            int tempX = Integer.parseInt(s.toString());
+            p.x = Integer.parseInt(s.toString());
+            
+            s.setLength(0);
+    
+            for(int i = 0; i < inputSplit[1].length(); i++){
+                char c = inputSplit[1].charAt(i);
+                if(Character.isDigit(c)){
+                    s.append(c);
+                }
+            }
+            p.y = Integer.parseInt(s.toString());
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        return p;
     }
 
-    public static Point handleInput(String input){
-        Point p = new Point();
-        return p;
+    public static void initIntro(){
+        System.out.println("Welcome to MineSweeper, here is the map.");
+        System.out.println("--------------------");
+        printClientMap();
+        System.out.println("--------------------");
+        System.out.println("Enter move x then y using 0-9.");
+        System.out.println("Sample Input: 3,5");
+        System.out.println("Use a comma to space your numbers");
+        System.out.println("We will use the first 2 numbers 0-9 the scanner finds.");
     }
 
     public static void printRawClientMap(){
@@ -87,7 +157,7 @@ public class Solution{
 
     public static void initMineList(){
         Random r = new Random();
-        while(mineMap.size() != 10){
+        while(mineMap.size() != mapMax){
             int tempX = r.nextInt(mapMax);
             int tempY = r.nextInt(mapMax);
             Point p = new Point(tempX, tempY);
@@ -216,6 +286,5 @@ public class Solution{
             return true;
         }
     }
-
 
 }
